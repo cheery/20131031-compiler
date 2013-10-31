@@ -1,0 +1,3 @@
+[submodule "parser"]
+	path = parser
+	url = https://github.com/cheery/20131029-parser
