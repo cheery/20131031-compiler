@@ -1,1 +1,6 @@
-print "hello"
+print = pow = 0
+beta = 1
+if beta
+    print "hello"
+else
+    alpha = pow 5 2
