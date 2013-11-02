@@ -1,7 +1,7 @@
 print = def text
     beta := 2
 beta = 1
-if beta
+while beta
     print "hello"
-else
-    alpha = pow 5 2
+#else
+#    alpha = pow 5 2

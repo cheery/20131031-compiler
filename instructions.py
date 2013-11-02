@@ -10,6 +10,9 @@ class Instruction(object):
     def __iter__(self):
         return iter(self.args)
 
+    def __getitem__(self, index):
+        return self.args[index]
+
     def repr(self):
         text = "i%i = %s " % (self.uid, self.name)
         text += ' '.join(repr(arg) for arg in self)

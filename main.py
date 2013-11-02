@@ -1,12 +1,17 @@
 import parser
 from builder import build
 from instructions import branch, cbranch, call, let, closure, ret
-from function import Namespace, Function
+from function import Namespace, Function, Variable
+import analysis
 
 def gen_expr(builder, expr):
     if expr.type == 'identifier':
         var = builder.function.lookup(expr.string)
         assert var is not None, repr(expr.string)
+        if isinstance(var, Variable):
+            var.getc += 1
+            if var.function != builder.function:
+                var.upscope = True
         return var
     if expr.type == 'string':
         return builder.function.constant(expr.string)
@@ -26,10 +31,12 @@ def gen_stmt(builder, stmt):
     if stmt.type == 'op' and stmt.string == '=':
         assert stmt[0].type == 'identifier'
         var = builder.function.bind(stmt[0].string)
+        var.letc += 1
         return builder.append(let(var, gen_stmt(builder, stmt[1])))
     if stmt.type == 'op' and stmt.string == ':=':
         assert stmt[0].type == 'identifier'
         var = builder.function.lookup(stmt[0].string)
+        var.letc += 1
         assert var is not None, repr(expr.string)
         return builder.append(let(var, gen_stmt(builder, stmt[1])))
     if stmt.type == 'if':
@@ -53,6 +60,20 @@ def gen_stmt(builder, stmt):
         b.append(branch(end))
         builder.attach(end)
         return None
+    if stmt.type == 'while':
+        check_cond = builder.new_block()
+        loop = builder.new_block()
+        end  = builder.new_block()
+        builder.append(branch(check_cond))
+        builder.attach(check_cond)
+        cond = gen_expr(builder, stmt[0])
+        builder.append(cbranch(cond, loop, end))
+        b = builder.spawn(loop)
+        for sub_stmt in stmt[1:]:
+            gen_stmt(b, sub_stmt)
+        b.append(branch(check_cond))
+        builder.attach(end)
+        return None
     return gen_expr(builder, stmt)
 
 class Native(object):
@@ -71,3 +92,8 @@ program = parser.parse_file('input')
 build(dump, gen_stmt, program)
 
 print dump.repr()
+
+for block in dump:
+    print 'local analysis', block
+    for which, var in analysis.local_reversed_variable_flow(block):
+        print which, var

@@ -8,12 +8,18 @@ class Block(object):
         self.uid = Block._next_uid
         Block._next_uid += 1
         self.instructions = []
+        self.terminated = False
 
     def __iter__(self):
         return iter(self.instructions)
 
+    def reversed(self):
+        return reversed(self.instructions)
+
     def append(self, instruction):
-        self.instructions.append(instruction)
+        if not self.terminated:
+            self.instructions.append(instruction)
+            self.terminated |= instruction.term
 
     def repr(self):
         text = "b%i:\n" % self.uid
