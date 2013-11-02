@@ -18,6 +18,9 @@ class Instruction(object):
     def __repr__(self):
         return "i%i" % (self.uid)
 
+def ret(argument):
+    return Instruction(True, 'ret', argument)
+
 def branch(target):
     return Instruction(True, 'branch', target)
 
@@ -30,3 +33,6 @@ def call(callee, args):
 
 def let(dst, src):
     return Instruction(False, 'let', dst, src)
+
+def closure(function):
+    return Instruction(False, 'closure', function)

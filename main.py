@@ -1,7 +1,7 @@
 import parser
-from builder import Builder
-from instructions import branch, cbranch, call, let
-from function import Function
+from builder import build
+from instructions import branch, cbranch, call, let, closure, ret
+from function import Namespace, Function
 
 def gen_expr(builder, expr):
     if expr.type == 'identifier':
@@ -16,12 +16,21 @@ def gen_expr(builder, expr):
         args = [gen_expr(builder, subexpr) for subexpr in expr]
         callee = args.pop(0)
         return builder.append(call(callee, args))
+    if expr.type == 'def':
+        argv = [arg.string for arg in expr[0]]
+        function = builder.new_function(argv, gen_stmt, expr[1:])
+        return builder.append(closure(function))
     raise Exception("%s not interpreted" % expr.repr())
 
 def gen_stmt(builder, stmt):
     if stmt.type == 'op' and stmt.string == '=':
         assert stmt[0].type == 'identifier'
         var = builder.function.bind(stmt[0].string)
+        return builder.append(let(var, gen_stmt(builder, stmt[1])))
+    if stmt.type == 'op' and stmt.string == ':=':
+        assert stmt[0].type == 'identifier'
+        var = builder.function.lookup(stmt[0].string)
+        assert var is not None, repr(expr.string)
         return builder.append(let(var, gen_stmt(builder, stmt[1])))
     if stmt.type == 'if':
         then = builder.new_block()
@@ -46,12 +55,19 @@ def gen_stmt(builder, stmt):
         return None
     return gen_expr(builder, stmt)
 
-dump = Function()
-builder = Builder(dump)
+class Native(object):
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return '<native %s>' % self.name
+
+global_module = Namespace({
+    'pow': Native('pow'),
+})
+dump = Function([], parent=global_module)
 
 program = parser.parse_file('input')
-for stmt in program:
-    gen_stmt(builder, stmt)
+build(dump, gen_stmt, program)
 
-for block in dump:
-    print block.repr()
+print dump.repr()

@@ -1,4 +1,5 @@
-print = pow = 0
+print = def text
+    beta := 2
 beta = 1
 if beta
     print "hello"

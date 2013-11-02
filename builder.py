@@ -1,3 +1,5 @@
+from instructions import ret
+
 class Block(object):
     _next_uid = 1
     def __init__(self, function):
@@ -22,10 +24,16 @@ class Block(object):
         return "b%i" % self.uid
 
 class Builder(object):
-    def __init__(self, function, block=None):
+    def __init__(self, function, generators, block=None):
         self.function = function
         self.current = self.new_block() if block is None else block
+        self.generators = generators
         self.flag = None
+
+    def new_function(self, argv, generator, body):
+        function = self.function.function(argv)
+        self.generators.append((function, generator, body))
+        return function
 
     def new_block(self):
         return Block(self.function)
@@ -35,7 +43,17 @@ class Builder(object):
         return instruction
 
     def spawn(self, block):
-        return self.__class__(self.function, block)
+        return self.__class__(self.function, self.generators, block)
 
     def attach(self, block):
         self.current = block
+
+def build(function, generator, body):
+    builder = Builder(function, [])
+    for stmt in body:
+        generator(builder, stmt)
+    builder.append(ret(builder.function.constant(None)))
+
+    for function, generator, body in builder.generators:
+        build(function, generator, body)
+    return builder.function

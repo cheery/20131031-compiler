@@ -4,7 +4,7 @@ class Variable(object):
         self.name = name
 
     def __repr__(self):
-        return self.name
+        return "%s@%r" % (self.name, self.function)
 
 class Constant(object):
     def __init__(self, function, value):
@@ -14,12 +14,27 @@ class Constant(object):
     def __repr__(self):
         return "const(%r)" % self.value
 
+class Namespace(object):
+    def __init__(self, namespace=None):
+        self.namespace = dict() if namespace is None else namespace
+
+    def lookup(self, name):
+        return self.namespace[name]
+        
+    def define(self, name, value):
+        self.namespace[name] = value
+
 class Function(object):
-    def __init__(self, parent=None):
+    _next_uid = 0
+    def __init__(self, argv, parent=None):
+        self.argv = argv
         self.parent = parent
         self.namespace = dict()
         self.constants = set()
+        self.functions = []
         self.blocks = []
+        self.uid = Function._next_uid
+        Function._next_uid += 1
 
     def append(self, block):
         self.blocks.append(block)
@@ -47,3 +62,17 @@ class Function(object):
         const = Constant(self, value)
         self.constants.add(const)
         return const
+
+    def function(self, argv):
+        function = Function(argv, self)
+        self.functions.append(function)
+        return function
+
+    def repr(self):
+        listing = '\n'.join(block.repr() for block in self)
+        sub_listings = '\n'.join("f%i %r:\n" % (function.uid, function.argv) + function.repr() for function in self.functions)
+        listing += '\n'+ sub_listings.replace('\n', '\n    ')
+        return listing
+
+    def __repr__(self):
+        return "f%i" % (self.uid)
