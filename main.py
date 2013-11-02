@@ -93,7 +93,13 @@ build(dump, gen_stmt, program)
 
 print dump.repr()
 
+analysis.variable_flow(dump)
+analysis.dominance_frontiers(dump)
 for block in dump:
-    print 'local analysis', block
-    for which, var in analysis.local_reversed_variable_flow(block):
-        print which, var
+    print 'analysis', block, '->', ', '.join(map(repr,block.succ))
+    print '  prec     ', block.prec
+    print '  idom     ', block.idom
+    print '  frontiers', block.frontiers
+    print '  provide', block.provides
+    print '  need   ', block.needs
+    print '  sustain', block.sustains

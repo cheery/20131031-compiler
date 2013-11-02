@@ -3,5 +3,7 @@ print = def text
 beta = 1
 while beta
     print "hello"
+
+print beta
 #else
 #    alpha = pow 5 2

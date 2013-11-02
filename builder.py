@@ -13,6 +13,9 @@ class Block(object):
     def __iter__(self):
         return iter(self.instructions)
 
+    def __getitem__(self, index):
+        return self.instructions[index]
+
     def reversed(self):
         return reversed(self.instructions)
 

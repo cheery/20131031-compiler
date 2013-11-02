@@ -45,6 +45,9 @@ class Function(object):
     def __iter__(self):
         return iter(self.blocks)
 
+    def __getitem__(self, index):
+        return self.blocks[index]
+
     def lookup(self, name):
         if name in self.namespace:
             return self.namespace[name]
