@@ -1,41 +1,31 @@
-class Instruction(object):
-    _next_uid = 1
-    def __init__(self, term, name, *args):
-        self.term = term
-        self.name = name
-        self.args = args
-        self.uid = Instruction._next_uid
-        Instruction._next_uid += 1
+from structures import Instruction, Variable
 
-    def __iter__(self):
-        return iter(self.args)
-
-    def __getitem__(self, index):
-        return self.args[index]
-
-    def repr(self):
-        text = "i%i = %s " % (self.uid, self.name)
-        text += ' '.join(repr(arg) for arg in self)
-        return text
-
-    def __repr__(self):
-        return "i%i" % (self.uid)
+#def inc_getc(arg):
+#    if isinstance(arg, Variable):
+#        arg.getc += 1
+#
+#def inc_getc_list(args):
+#    for arg in args:
+#        inc_getc(arg)
 
 def ret(argument):
-    return Instruction(True, 'ret', argument)
+#    inc_getc(argument)
+    return Instruction(True, False, 'ret', argument)
 
 def branch(target):
-    return Instruction(True, 'branch', target)
+    return Instruction(True, False, 'branch', target)
 
 def cbranch(cond, then, else_):
     assert cond is not None
-    return Instruction(True, 'cbranch', cond, then, else_)
+#    inc_getc(cond)
+    return Instruction(True, False, 'cbranch', cond, then, else_)
 
 def call(callee, args):
-    return Instruction(False, 'call', callee, args)
+#    inc_getc(callee)
+#    inc_getc_list(args)
+    return Instruction(False, True, 'call', callee, *args)
 
 def let(dst, src):
-    return Instruction(False, 'let', dst, src)
-
-def closure(function):
-    return Instruction(False, 'closure', function)
+#    dst.letc += 1
+#    inc_getc(src)
+    return Instruction(False, False, 'let', dst, src)

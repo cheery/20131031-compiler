@@ -1,68 +1,116 @@
-from instructions import ret
-
-class Block(object):
-    _next_uid = 1
-    def __init__(self, function):
-        self.function = function
-        function.append(self)
-        self.uid = Block._next_uid
-        Block._next_uid += 1
-        self.instructions = []
-        self.terminated = False
-
-    def __iter__(self):
-        return iter(self.instructions)
-
-    def __getitem__(self, index):
-        return self.instructions[index]
-
-    def reversed(self):
-        return reversed(self.instructions)
-
-    def append(self, instruction):
-        if not self.terminated:
-            self.instructions.append(instruction)
-            self.terminated |= instruction.term
-
-    def repr(self):
-        text = "b%i:\n" % self.uid
-        text += '\n'.join(instr.repr() for instr in self)
-        return text.replace('\n', '\n    ')
-
-    def __repr__(self):
-        return "b%i" % self.uid
+from instructions import ret, branch, cbranch, call, let
+from structures import Block, Function, Variable
 
 class Builder(object):
-    def __init__(self, function, generators, block=None):
+    def __init__(self, function, block, cont=None):
         self.function = function
-        self.current = self.new_block() if block is None else block
-        self.generators = generators
+        self.current = block
+        self.cont = [] if cont is None else cont
         self.flag = None
+        self.suspend = False
 
-    def new_function(self, argv, generator, body):
+    def new_function(self, argv, body):
         function = self.function.function(argv)
-        self.generators.append((function, generator, body))
+        def cnt():
+            builder = Builder(function, Block(function))
+            for stmt in body:
+                builder.stmt(stmt)
+            builder.append(ret(None))
+        self.cont.append(cnt)
         return function
 
     def new_block(self):
         return Block(self.function)
 
     def append(self, instruction):
-        self.current.append(instruction)
+        if not self.suspend:
+            self.current.append(instruction)
+            self.suspend |= instruction.term
         return instruction
 
     def spawn(self, block):
-        return self.__class__(self.function, self.generators, block)
+        return self.__class__(self.function, block, self.cont)
 
     def attach(self, block):
         self.current = block
+        self.suspend = False
 
-def build(function, generator, body):
-    builder = Builder(function, [])
+    def expr(self, expr):
+        if expr.type == 'identifier':
+            var = self.function.lookup(expr.string)
+            assert var is not None, repr(expr.string)
+            return var
+        if expr.type == 'string':
+            return expr.string
+        if expr.type == 'number':
+            if "." in expr.string:
+                return float(expr.string)
+            else:
+                return int(expr.string)
+        if expr.type == 'call':
+            args = [self.expr(sub_expr) for sub_expr in expr]
+            callee = args.pop(0)
+            return self.append(call(callee, args))
+        if expr.type == 'def':
+            argv = [arg.string for arg in expr[0]]
+            body = expr[1:]
+            return self.new_function(argv, body)
+        raise Exception("%s not built" % expr.repr())
+
+    def stmt(self, stmt):
+        if stmt.type == 'op' and stmt.string == '=':
+            assert stmt[0].type == 'identifier'
+            var = self.function.bind(stmt[0].string)
+            return self.append(let(var, self.stmt(stmt[1])))
+        if stmt.type == 'op' and stmt.string == ':=':
+            assert stmt[0].type == 'identifier'
+            var = self.function.lookup(stmt[0].string)
+            assert var is not None, repr(expr.string)
+            return self.append(let(var, self.stmt(stmt[1])))
+        if stmt.type == 'if':
+            then = self.new_block()
+            end  = self.new_block()
+            self.flag = self.expr(stmt[0])
+            self.append(cbranch(self.flag, then, end))
+            b = self.spawn(then)
+            for sub_stmt in stmt[1:]:
+                b.stmt(sub_stmt)
+            b.append(branch(end))
+            self.attach(end)
+            return None
+        if stmt.type == 'else':
+            then = self.new_block()
+            end  = self.new_block()
+            self.append(cbranch(self.flag, end, then))
+            b = self.spawn(then)
+            for sub_stmt in stmt:
+                b.stmt(sub_stmt)
+            b.append(branch(end))
+            self.attach(end)
+            return None
+        if stmt.type == 'while':
+            loop = self.new_block()
+            end  = self.new_block()
+
+            cond = self.expr(stmt[0])
+            self.append(cbranch(cond, loop, end))
+
+            b = self.spawn(loop)
+            for sub_stmt in stmt[1:]:
+                b.stmt(sub_stmt)
+            cond = b.expr(stmt[0])
+            b.append(cbranch(cond, loop, end))
+
+            self.attach(end)
+            return None
+        return self.expr(stmt)
+
+def build(body, module):
+    root = Function([], parent=module)
+    builder = Builder(root, Block(root))
     for stmt in body:
-        generator(builder, stmt)
-    builder.append(ret(builder.function.constant(None)))
-
-    for function, generator, body in builder.generators:
-        build(function, generator, body)
-    return builder.function
+        builder.stmt(stmt)
+    builder.append(ret(None))
+    for fn in builder.cont:
+        fn()
+    return root

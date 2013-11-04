@@ -1,4 +1,4 @@
-from function import Variable
+from structures import Variable
 
 def dominance_frontiers(function):
     def peel(obj, depth):
@@ -6,14 +6,9 @@ def dominance_frontiers(function):
             obj = obj.idom
         return obj
     for block in function:
-        block.prec = []
-        block.succ = block_jump_targets(block)
         block.idom = None
         block.idom_depth = 0
         block.frontiers = set()
-    for block in function:
-        for target in block.succ:
-            target.prec.append(block)
     assert len(function[0].prec) == 0
     breath = [function[0]]
     while len(breath) > 0:
@@ -34,9 +29,13 @@ def dominance_frontiers(function):
                 target.idom = idom
                 target.idom_depth = idom.idom_depth + 1
     for block in function:
+        block.phi = set()
         if len(block.prec) >= 2:
             for runner in block.prec:
                 while runner != block.idom:
+                    for var in runner.provides:
+                        if var in block.sustains:
+                            block.phi.add(var)
                     runner.frontiers.add(block)
                     runner = runner.idom
 
@@ -44,35 +43,30 @@ def variable_flow(function):
     for block in function:
         provides = set()
         needs = set()
-        for which, var in local_reversed_variable_flow(block):
-            if which == 'get':
-                needs.add(var)
-            if which == 'let':
+        for instruction in reversed(block):
+            args = iter(instruction)
+            if instruction.name == 'let':
+                var = args.next()
                 provides.add(var)
                 needs.discard(var)
+            needs.update(arg for arg in args if isinstance(arg, Variable))
         block.provides = provides
         block.needs    = needs
         block.sustains = needs.copy()
+        block.succ = block_jump_targets(block)
+        block.prec = []
+    for block in function:
+        for target in block.succ:
+            target.prec.append(block)
     done = False
     while not done:
         done = True
         for block in function:
             k = len(block.sustains)
-            for target in block_jump_targets(block):
+            for target in block.succ:
                 block.sustains.update(target.sustains - block.provides)
             if k < len(block.sustains):
                 done = False
-
-def local_reversed_variable_flow(block):
-    for instruction in block.reversed():
-        if instruction.name == 'let':
-            yield 'let', instruction[0]
-            args = instruction[1:]
-        else:
-            args = instruction
-        for arg in args:
-            if isinstance(arg, Variable):
-                yield 'get', arg
 
 def block_jump_targets(block):
     instruction = block[-1]
