@@ -29,3 +29,6 @@ def let(dst, src):
 #    dst.letc += 1
 #    inc_getc(src)
     return Instruction(False, False, 'let', dst, src)
+
+def member(arg, name):
+    return Instruction(False, True, 'member', arg, name)

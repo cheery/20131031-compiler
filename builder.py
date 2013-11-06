@@ -1,4 +1,4 @@
-from instructions import ret, branch, cbranch, call, let
+from instructions import ret, branch, cbranch, call, let, member
 from structures import Block, Function, Variable
 import objects
 
@@ -48,6 +48,9 @@ class Builder(object):
                 return objects.Float(float(expr.string))
             else:
                 return objects.Integer(int(expr.string))
+        if expr.type == 'member':
+            arg = self.expr(expr[0])
+            return self.append(member(arg, expr.string))
         if expr.type == 'call':
             args = [self.expr(sub_expr) for sub_expr in expr]
             callee = args.pop(0)
@@ -62,12 +65,20 @@ class Builder(object):
         if stmt.type == 'op' and stmt.string == '=':
             assert stmt[0].type == 'identifier'
             var = self.function.bind(stmt[0].string)
-            return self.append(let(var, self.stmt(stmt[1])))
+            self.append(let(var, self.stmt(stmt[1])))
+            return var
         if stmt.type == 'op' and stmt.string == ':=':
             assert stmt[0].type == 'identifier'
             var = self.function.lookup(stmt[0].string)
             assert var is not None, repr(expr.string)
-            return self.append(let(var, self.stmt(stmt[1])))
+            self.append(let(var, self.stmt(stmt[1])))
+            return var
+        if stmt.type == 'import':
+            var = self.function.bind(stmt.string)
+            m = call(self.function.lookup('import'), [objects.String(stmt.string)])
+            self.append(m)
+            self.append(let(var, m))
+            return m
         if stmt.type == 'if':
             then = self.new_block()
             end  = self.new_block()

@@ -37,6 +37,24 @@ def gt(a, b):
         return objects.true if a.value > b.value else objects.false
     raise Exception("not an ordinal %r, %r" % (a, b))
 
+def ffi_library(src, *headers):
+    print 'importing C library'
+    print 'lib', src
+    print 'headers', headers
+
+ffi = objects.Module('ffi', {
+    'library': objects.Native('library', ffi_library),
+})
+
+system_modules = {ffi.name:ffi}
+def import_module(name):
+    assert isinstance(name, objects.String)
+    if name.value in system_modules:
+        print "imported module", name.value
+        return system_modules[name.value]
+    else:
+        raise Exception("complete import not implemented")
+    
 #class Native(object):
 #    def __init__(self, name):
 #        self.name = name
@@ -49,9 +67,11 @@ global_module = Namespace({
     'sub': objects.Native('sub', sub),
     'lt': objects.Native('lt', lt),
     'gt': objects.Native('gt', gt),
+    'import': objects.Native('import', import_module),
 })
 
 program = parser.parse_file('input')
+print program.repr()
 dump = builder.build(program, global_module)
 
 #print dump.repr()
@@ -73,8 +93,8 @@ analysis.dominance_frontiers(dump)
 result = prune.prune(dump)
 registeralloc.allocate(result)
 
-#print 'after pruning'
-#print result.repr()
+print 'after pruning'
+print result.repr()
 
 print "run the program"
 script = objects.Closure(interpret.run, result, None)

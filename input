@@ -1,7 +1,11 @@
-i = 10
-while lt 0 i 
-    println "hello" i
-    i = sub i 1
+import ffi
+
+sdl = ffi.library 'libSDL.so' 'SDL/include.h'
+
+#i = 10
+#while lt 0 i 
+#    println "hello" i
+#    i = sub i 1
 
 
 # print = def text

@@ -1,6 +1,6 @@
 import analysis
 from builder import Builder
-from instructions import branch, cbranch, call, let, ret
+from instructions import branch, cbranch, call, let, ret, member
 from structures import Namespace, Instruction, Function, Variable, Block, Phi
 
 def prune_argument(arg, env, mapping):
@@ -74,6 +74,11 @@ def prune_block(source, mapping):
         elif name == 'call':
             args = [prune_argument(arg, env, mapping) for arg in instruction]
             res = call(args[0], args[1:])
+            block.append(res)
+            mapping[instruction] = res
+        elif name == 'member':
+            arg, name = instruction
+            res = member(prune_argument(arg, env, mapping), name)
             block.append(res)
             mapping[instruction] = res
         elif name == 'branch':

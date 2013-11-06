@@ -6,6 +6,7 @@ from string import String
 from boolean import Boolean
 from null import Null
 from native import Native
+from module import Module
 
 null = Null()
 true  = Boolean(True)

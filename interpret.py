@@ -21,6 +21,9 @@ def run(frame):
                 args = iter(instruction)
                 callee = fetch(args.next(), frame, regs)
                 regs[instruction.reg] = callee.call([fetch(arg, frame, regs) for arg in args])
+            elif name == 'member':
+                val = fetch(instruction[0], frame, regs)
+                regs[instruction.reg] = val.getattr(instruction[1])
             elif name == 'branch':
                 last = block
                 block = instruction[0]
