@@ -1,16 +1,22 @@
-print = def text
-alpha = 10
-while alpha
-    alpha = pow alpha 2
-print alpha
+i = 10
+while lt 0 i 
+    println "hello" i
+    i = sub i 1
 
-#print = def text
-#    beta := 2
-#beta = 1
-#while beta
-#    print "hello"
-#
-#if beta
-#    print "foo"
-#else
-#    print pow 5 2
+
+# print = def text
+# alpha = 10
+# while alpha
+#     alpha = pow alpha 2
+# print alpha
+# 
+# #print = def text
+# #    beta := 2
+# #beta = 1
+# #while beta
+# #    print "hello"
+# #
+# #if beta
+# #    print "foo"
+# #else
+# #    print pow 5 2

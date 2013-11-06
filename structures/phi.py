@@ -21,3 +21,9 @@ class Phi(object):
 
     def __repr__(self):
         return "i%i" % (self.uid)
+
+    def __iter__(self):
+        return iter(self.routes.values())
+
+    def __getitem__(self, src):
+        return self.routes[src]

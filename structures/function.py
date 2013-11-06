@@ -11,6 +11,7 @@ class Function(object):
         self.functions = []
         self.blocks = []
         self.uid = Function.uid_generator.next()
+        self.variables = []
 
     def __getitem__(self, index):
         return self.blocks[index]

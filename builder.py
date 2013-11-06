@@ -1,5 +1,6 @@
 from instructions import ret, branch, cbranch, call, let
 from structures import Block, Function, Variable
+import objects
 
 class Builder(object):
     def __init__(self, function, block, cont=None):
@@ -15,7 +16,7 @@ class Builder(object):
             builder = Builder(function, Block(function))
             for stmt in body:
                 builder.stmt(stmt)
-            builder.append(ret(None))
+            builder.append(ret(objects.null))
         self.cont.append(cnt)
         return function
 
@@ -41,12 +42,12 @@ class Builder(object):
             assert var is not None, repr(expr.string)
             return var
         if expr.type == 'string':
-            return expr.string
+            return objects.String(expr.string)
         if expr.type == 'number':
             if "." in expr.string:
-                return float(expr.string)
+                return objects.Float(float(expr.string))
             else:
-                return int(expr.string)
+                return objects.Integer(int(expr.string))
         if expr.type == 'call':
             args = [self.expr(sub_expr) for sub_expr in expr]
             callee = args.pop(0)
@@ -110,7 +111,7 @@ def build(body, module):
     builder = Builder(root, Block(root))
     for stmt in body:
         builder.stmt(stmt)
-    builder.append(ret(None))
+    builder.append(ret(objects.null))
     for fn in builder.cont:
         fn()
     return root
