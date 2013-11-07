@@ -1,6 +1,11 @@
-import ffi
+import cffi
 
-sdl = ffi.library 'libSDL.so' 'SDL/include.h'
+sdl = cffi.library 'libSDL.so' 'SDL/SDL.h'
+
+#stdlib = cffi.library 'libc.so' 'unistd.h' 'stdlib.h'
+
+println sdl.SDL_Init sdl.SDL_INIT_VIDEO sdl.SDL_QUIT
+
 
 #i = 10
 #while lt 0 i 

@@ -8,6 +8,7 @@ import builder
 import registeralloc
 import objects
 import interpret
+import cffi
 
 def println(*objs):
     for obj in objs:
@@ -37,16 +38,7 @@ def gt(a, b):
         return objects.true if a.value > b.value else objects.false
     raise Exception("not an ordinal %r, %r" % (a, b))
 
-def ffi_library(src, *headers):
-    print 'importing C library'
-    print 'lib', src
-    print 'headers', headers
-
-ffi = objects.Module('ffi', {
-    'library': objects.Native('library', ffi_library),
-})
-
-system_modules = {ffi.name:ffi}
+system_modules = {cffi.module.name:cffi.module}
 def import_module(name):
     assert isinstance(name, objects.String)
     if name.value in system_modules:
