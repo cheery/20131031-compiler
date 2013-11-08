@@ -1,10 +1,32 @@
 import ctypes
+import objects
 
 class CellType(object):
     def __init__(self, ctype):
         self.ctype = ctype
 
-c_void = CellType(None)
+    def from_ctypes(self, value):
+        if isinstance(value, (int, long)):
+            return objects.Integer(value)
+        if isinstance(value, float):
+            return objects.Float(value)
+        if value is None:
+            return objects.null
+        raise Exception("Unknown cell value: %r" % value)
+    
+class VoidType(CellType):
+    def from_ctypes(self, value):
+        return objects.null
+
+class IntType(CellType):
+    def from_ctypes(self, value):
+        return objects.Integer(value)
+
+class FloatType(CellType):
+    def from_ctypes(self, value):
+        return objects.Float(value)
+
+c_void = VoidType(None)
 c_int  = CellType(ctypes.c_int)
 c_uint = CellType(ctypes.c_uint)
 c_long = CellType(ctypes.c_long)
@@ -36,6 +58,10 @@ class CFunc(object):
         if self.name is None:
             return "<CFunc %x>" % id(self)
         return self.name
+
+    def call(self, args):
+        res = self.cfunc(*[arg.as_ctypes_argument() for arg in args])
+        return self.proto.restype.from_ctypes(res)
 
 class Record(object):
     def __init__(self, fields, name='record'):

@@ -11,3 +11,6 @@ class Float(object):
 
     def __repr__(self):
         return 'const(%r)' % self.value
+
+    def as_ctypes_argument(self):
+        return self.value

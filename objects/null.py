@@ -10,3 +10,6 @@ class Null(object):
 
     def __repr__(self):
         return 'const(null)'
+
+    def as_ctypes_argument(self):
+        return None

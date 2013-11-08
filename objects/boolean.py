@@ -7,3 +7,6 @@ class Boolean(object):
 
     def __repr__(self):
         return 'const(%s)' % (repr(self.value).lower())
+
+    def as_ctypes_argument(self):
+        return self.value
