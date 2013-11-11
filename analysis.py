@@ -33,11 +33,29 @@ def dominance_frontiers(function):
         if len(block.prec) >= 2:
             for runner in block.prec:
                 while runner != block.idom:
-                    for var in runner.provides:
-                        if var in block.sustains:
-                            block.phi.add(var)
                     runner.frontiers.add(block)
                     runner = runner.idom
+    def frontier_visit(frontier, var):
+        if var in frontier.phi:
+            return
+        if var in frontier.sustains:
+            frontier.phi.add(var)
+            for deep_frontier in frontier.frontiers:
+                frontier_visit(deep_frontier, var)
+    for block in function:
+        for var in block.provides:
+            for frontier in block.frontiers:
+                frontier_visit(frontier, var)
+#    done = False
+#    while not done:
+#        done = True
+#        for block in function:
+#            phis = block.provides | block.phi
+#            for frontier in block.frontiers:
+#                k = len(frontier.phi)
+#                frontier.phi.update(frontier.sustains & phis)
+#                if k < len(frontier.phi):
+#                    done = False
 
 def variable_flow(function):
     for block in function:

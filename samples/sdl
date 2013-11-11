@@ -1,0 +1,22 @@
+import cffi
+
+lib = cffi.library 'libSDL.so' 'SDL/SDL.h'
+
+res = lib.SDL_Init lib.SDL_INIT_VIDEO
+if res != 0
+    println "sdl video initialization failed, res=" res
+    #return implement it.
+event = lib.SDL_Event.
+surface = lib.SDL_SetVideoMode 640 480 0 0
+
+running = true
+while running
+    while (lib.SDL_PollEvent (cffi.byref event)) != 0
+        if event.type == lib.SDL_QUIT
+            println "event type" event.type "running" running "lib.SDL_QUIT" lib.SDL_QUIT
+            running = false
+    lib.SDL_FillRect surface null 0xFFAA
+    lib.SDL_Flip surface
+
+lib.SDL_Quit.
+println "sdl quit"

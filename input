@@ -1,22 +1,9 @@
-import cffi
-
-sdl = cffi.library 'libSDL.so' 'SDL/SDL.h'
-
-
-res = sdl.SDL_Init sdl.SDL_INIT_VIDEO
-println "sdl video initialized with value" res 
-
-sdl.SDL_Quit.
-println "sdl quit"
-
 #stdlib = cffi.library 'libc.so' 'unistd.h' 'stdlib.h'
-
 
 #i = 10
 #while lt 0 i 
 #    println "hello" i
 #    i = sub i 1
-
 
 # print = def text
 # alpha = 10

@@ -62,6 +62,7 @@ def allocate(function):
                 new_sustains = target.sustains - block.provides
                 block.sustains.update(new_sustains)
                 for arg in new_sustains:
+                    update(arg, block.index + len(block))
                     update(arg, block.index)
             if k < len(block.sustains):
                 done = False
@@ -76,6 +77,7 @@ def allocate(function):
         while len(active) > 0 and active[0].stop <= i:
             interval = active.pop(0)
             freeregs.add(interval.instruction.reg)
+#            print '- interval', interval, 'reg = r%r' % interval.instruction.reg
     for interval in intervals:
         expire_old_intervals(interval.start)
         if len(freeregs) == 0:
@@ -85,6 +87,8 @@ def allocate(function):
         interval.instruction.reg = reg
         active.append(interval)
         active.sort(key=lambda i: i.stop)
+#        print '+ interval', interval, "reg = r%r" % interval.instruction.reg
+
     function.registers = regc.next()
     for sub_function in function.functions:
         allocate(sub_function)

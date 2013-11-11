@@ -1,6 +1,7 @@
 import objects
 from cdll import CDLL
 import os
+import ctypes
 
 header_prefixes = [
     "/usr/include",
@@ -23,6 +24,18 @@ def ffi_library(path, *headers):
     print 'headers', resolved_headers
     return CDLL(path.value, resolved_headers)
 
+class Ref(object):
+    def __init__(self, cell):
+        self.cell = cell
+
+    def as_ctypes_argument(self):
+        c = self.cell.as_ctypes_argument()
+        return ctypes.byref(c)
+
+def ffi_byref(obj):
+    return Ref(obj)
+
 module = objects.Module('cffi', {
     'library': objects.Native('library', ffi_library),
+    'byref': objects.Native('byref', ffi_byref),
 })

@@ -20,10 +20,13 @@ def run(frame):
             if name == 'call':
                 args = iter(instruction)
                 callee = fetch(args.next(), frame, regs)
+#                print "r%r" % instruction.reg, instruction.repr()
+#                print "callee", callee
                 regs[instruction.reg] = callee.call([fetch(arg, frame, regs) for arg in args])
             elif name == 'member':
                 val = fetch(instruction[0], frame, regs)
                 regs[instruction.reg] = val.getattr(instruction[1])
+#                print "r%r" % instruction.reg, instruction.repr()
             elif name == 'branch':
                 last = block
                 block = instruction[0]
@@ -37,6 +40,7 @@ def run(frame):
                     block = instruction[2]
                 break
             elif name == 'phi':
+#                print "r%r" % instruction.reg, instruction.repr()
                 regs[instruction.reg] = fetch(instruction[last], frame, regs)
             elif name == 'ret':
                 return fetch(instruction[0], frame, regs)

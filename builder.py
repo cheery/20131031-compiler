@@ -46,6 +46,8 @@ class Builder(object):
         if expr.type == 'number':
             if "." in expr.string:
                 return objects.Float(float(expr.string))
+            elif expr.string.startswith('0x'):
+                return objects.Integer(int(expr.string, 16))
             else:
                 return objects.Integer(int(expr.string))
         if expr.type == 'member':
@@ -59,6 +61,25 @@ class Builder(object):
             argv = [arg.string for arg in expr[0]]
             body = expr[1:]
             return self.new_function(argv, body)
+        if expr.type == 'op':
+            lhs, rhs = expr
+            opname = ''
+            if expr.string == '<':
+                opname = 'lt'
+            if expr.string == '>':
+                opname = 'gt'
+            if expr.string == '<=':
+                opname = 'le'
+            if expr.string == '>=':
+                opname = 'ge'
+            if expr.string == '!=':
+                opname = 'ne'
+            if expr.string == '==':
+                opname = 'eq'
+            if len(opname) > 0:
+                res = call(self.function.lookup(opname), [self.expr(lhs), self.expr(rhs)])
+                self.append(res)
+                return res
         raise Exception("%s not built" % expr.repr())
 
     def stmt(self, stmt):

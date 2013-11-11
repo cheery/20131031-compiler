@@ -13,5 +13,5 @@ class Module(object):
         return 'module(%s)' % self.name
 
     def getattr(self, name):
-        print 'getattr %s.%s' % (self.name, name)
+        #print 'getattr %s.%s' % (self.name, name)
         return self.namespace[name]

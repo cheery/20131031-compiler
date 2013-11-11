@@ -68,7 +68,7 @@ class Header(object):
         if t.kind in celltypes:
             return celltypes[t.kind]
         if t.kind == TypeKind.POINTER:
-            return my_ctypes.Pointer(self.convert_type(t.get_pointee()))
+            return my_ctypes.PointerType(self.convert_type(t.get_pointee()))
         if t.kind == TypeKind.ENUM:
             return self.convert_type(t.get_declaration().enum_type)
         if t.kind == TypeKind.RECORD:
@@ -106,6 +106,8 @@ class Header(object):
                 cfunc.restype = proto.restype.ctype
                 cfunc.argtypes = [arg.ctype for arg in proto.argtypes]
                 return my_ctypes.CFunc(cfunc, proto)
+            elif node.kind == CursorKind.UNION_DECL:
+                return self.convert_type(node.type.get_canonical())
             else:
                 raise Exception("unimplemented %r" % node.kind)
 

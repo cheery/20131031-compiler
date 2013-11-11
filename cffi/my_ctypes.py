@@ -38,10 +38,23 @@ c_short = CellType(ctypes.c_short)
 c_float = CellType(ctypes.c_float)
 c_double = CellType(ctypes.c_double)
 
-class Pointer(object):
+class PointerType(object):
     def __init__(self, pointee):
         self.pointee = pointee
         self.ctype = ctypes.POINTER(pointee.ctype)
+
+    def from_ctypes(self, value):
+        if value == 0 or value == None:
+            return objects.null
+        return Pointer(self, value)
+
+class Pointer(object):
+    def __init__(self, type, value):
+        self.type = type
+        self.value = value
+
+    def as_ctypes_argument(self):
+        return self.value
 
 class CFuncType(object):
     def __init__(self, restype, argtypes):
@@ -63,23 +76,40 @@ class CFunc(object):
         res = self.cfunc(*[arg.as_ctypes_argument() for arg in args])
         return self.proto.restype.from_ctypes(res)
 
+class Instance(object):
+    def __init__(self, type, c_obj):
+        self.type = type
+        self.c_obj = c_obj
+
+    def as_ctypes_argument(self):
+        return self.c_obj
+
+    def getattr(self, name):
+        c_obj = getattr(self.as_ctypes_argument(), name)
+        return self.type.fields[name].from_ctypes(c_obj)
+
+#    def vm_setattr(self, name, value):
+#        return setattr(self.as_ctypes_argument(), name, value)
+
 class Record(object):
     def __init__(self, fields, name='record'):
         self.fields = dict(fields)
         cfields = [(name, t.ctype) for name, t in fields]
         self.ctype = type(name, (ctypes.Structure,), {"_fields_":cfields})
-#
-#    def vm_call(self, args):
-#        return FFIInstance(self.ctype(*args))
+
+    def call(self, args):
+        args = [arg.as_ctypes_argument() for arg in args]
+        return Instance(self, self.ctype(*args))
 
 class Union(object):
     def __init__(self, fields, name='union'):
         self.fields = dict(fields)
         cfields = [(name, t.ctype) for name, t in fields]
         self.ctype = type(name, (ctypes.Union,), {"_fields_":cfields})
-#
-#    def vm_call(self, args):
-#        return FFIInstance(self.ctype(*args))
+
+    def call(self, args):
+        args = [arg.as_ctypes_argument() for arg in args]
+        return Instance(self, self.ctype(*args))
 
 def byref(obj):
     assert isinstance(obj, Instance)
