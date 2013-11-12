@@ -12,6 +12,7 @@ import cffi
 import operator
 import sys
 import greenlet_wrapper
+import compiler
 
 def println(*objs):
     for obj in objs:
@@ -40,6 +41,7 @@ def cmp_op(name, op):
 system_modules = {
     cffi.module.name:cffi.module,
     greenlet_wrapper.module.name:greenlet_wrapper.module,
+    compiler.module.name:compiler.module,
 }
 def require_module(name):
     assert isinstance(name, objects.String)

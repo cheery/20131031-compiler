@@ -91,6 +91,7 @@ class Builder(object):
             self.append(let(var, self.stmt(stmt[1])))
             return var
         if stmt.type == 'op' and stmt.string == ':=':
+            raise Exception("upscope assignment rules are about to change.")
             assert stmt[0].type == 'identifier'
             var = self.function.lookup(stmt[0].string)
             assert var is not None, repr(expr.string)

@@ -1,0 +1,8 @@
+compile = require 'compile'
+
+println "compiling test"
+
+main = def
+    return 2
+
+compile.native main
