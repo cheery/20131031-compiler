@@ -11,6 +11,7 @@ import interpret
 import cffi
 import operator
 import sys
+import greenlet_wrapper
 
 def println(*objs):
     for obj in objs:
@@ -36,14 +37,17 @@ def cmp_op(name, op):
         raise Exception("not an ordinal %r, %r" % (a, b))
     return objects.Native(name, _impl)
 
-system_modules = {cffi.module.name:cffi.module}
-def import_module(name):
+system_modules = {
+    cffi.module.name:cffi.module,
+    greenlet_wrapper.module.name:greenlet_wrapper.module,
+}
+def require_module(name):
     assert isinstance(name, objects.String)
     if name.value in system_modules:
-        print "imported module", name.value
+        print "required module", name.value
         return system_modules[name.value]
     else:
-        raise Exception("complete import not implemented")
+        raise Exception("complete require not implemented")
 
 global_module = Namespace({
     'println': objects.Native('println', println),
@@ -57,7 +61,7 @@ global_module = Namespace({
     'false': objects.false,
     'true': objects.true,
     'null': objects.null,
-    'import': objects.Native('import', import_module),
+    'require': objects.Native('require', require_module),
 })
 
 if len(sys.argv) < 2:

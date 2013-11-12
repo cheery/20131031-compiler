@@ -96,12 +96,12 @@ class Builder(object):
             assert var is not None, repr(expr.string)
             self.append(let(var, self.stmt(stmt[1])))
             return var
-        if stmt.type == 'import':
-            var = self.function.bind(stmt.string)
-            m = call(self.function.lookup('import'), [objects.String(stmt.string)])
-            self.append(m)
-            self.append(let(var, m))
-            return m
+#        if stmt.type == 'import':
+#            var = self.function.bind(stmt.string)
+#            m = call(self.function.lookup('import'), [objects.String(stmt.string)])
+#            self.append(m)
+#            self.append(let(var, m))
+#            return m
         if stmt.type == 'if':
             then = self.new_block()
             end  = self.new_block()

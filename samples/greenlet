@@ -1,12 +1,10 @@
-#import greenlet
+greenlet = require 'greenlet'
 
-# some programs just turn rude.
+this = greenlet.getcurrent.
+that = greenlet.greenlet def alpha
+    println "alpha" alpha
+    println "alpha" (this.switch 10)
 
-hello = def name
-    println "hello" name
-    hello := def name
-        println "hello fucking" name
-        return 5
-
-hello "tarzan"
-println (hello "jane")
+res = that.switch "hello"
+println "delta" res
+println "delta" (that.switch "world")

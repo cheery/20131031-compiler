@@ -1,4 +1,4 @@
-import cffi
+cffi = require 'cffi'
 
 lib = cffi.library 'libSDL.so' 'SDL/SDL.h'
 
@@ -14,6 +14,8 @@ while running
     while (lib.SDL_PollEvent (cffi.byref event)) != 0
         if event.type == lib.SDL_QUIT
             println "event type" event.type "running" running "lib.SDL_QUIT" lib.SDL_QUIT
+            running = false
+        if event.type == lib.SDL_KEYDOWN
             running = false
     lib.SDL_FillRect surface null 0xFFAA
     lib.SDL_Flip surface
