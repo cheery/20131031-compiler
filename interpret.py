@@ -1,4 +1,4 @@
-from structures import Phi, Instruction, Variable
+from structures import Phi, Instruction, Variable, Function
 import objects
 
 def fetch(arg, frame, regs):
@@ -8,7 +8,18 @@ def fetch(arg, frame, regs):
         while frame.function != arg.function:
             frame = frame.parent
         return frame.variables[arg.index]
+    if isinstance(arg, Function):
+        if arg in frame.closures:
+            res = frame.closures[arg]
+        else:
+            res = frame.closures[arg] = objects.Closure(run, arg, frame)
+        return res
     return arg
+
+def store(var, frame, arg):
+    while frame.function != var.function:
+        frame = frame.parent
+    frame.variables[var.index] = arg
 
 def run(frame):
     block = last = frame.function[0]
@@ -17,7 +28,10 @@ def run(frame):
     while True:
         for instruction in block:
             name = instruction.name
-            if name == 'call':
+            if name == 'let':
+                arg = fetch(instruction[1], frame, regs)
+                store(instruction[0], frame, arg)
+            elif name == 'call':
                 args = iter(instruction)
                 callee = fetch(args.next(), frame, regs)
 #                print "r%r" % instruction.reg, instruction.repr()

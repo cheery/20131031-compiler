@@ -69,8 +69,8 @@ program = parser.parse_file(sys.argv[1])
 print program.repr()
 dump = builder.build(program, global_module)
 
-#print dump.repr()
-#print
+print dump.repr()
+print
 
 analysis.variable_flow(dump)
 analysis.dominance_frontiers(dump)

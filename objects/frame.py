@@ -3,3 +3,4 @@ class Frame(object):
         self.parent = parent
         self.function = function
         self.variables = [None for var in function.variables]
+        self.closures = {}

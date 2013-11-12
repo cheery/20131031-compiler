@@ -1,0 +1,12 @@
+#import greenlet
+
+# some programs just turn rude.
+
+hello = def name
+    println "hello" name
+    hello := def name
+        println "hello fucking" name
+        return 5
+
+hello "tarzan"
+println (hello "jane")

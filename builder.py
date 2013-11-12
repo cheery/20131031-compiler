@@ -17,6 +17,8 @@ class Builder(object):
             for stmt in body:
                 builder.stmt(stmt)
             builder.append(ret(objects.null))
+            for fn in builder.cont:
+                fn()
         self.cont.append(cnt)
         return function
 
@@ -135,6 +137,12 @@ class Builder(object):
             b.append(cbranch(cond, loop, end))
 
             self.attach(end)
+            return None
+        if stmt.type == 'return':
+            if len(stmt) > 0:
+                self.append(ret(self.expr(stmt[0])))
+            else:
+                self.append(ret(objects.null))
             return None
         return self.expr(stmt)
 

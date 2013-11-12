@@ -12,6 +12,11 @@ class Function(object):
         self.blocks = []
         self.uid = Function.uid_generator.next()
         self.variables = []
+        self.argvars = []
+        for name in argv:
+            arg = self.bind(name)
+            arg.upscope = True
+            self.argvars.append(arg)
 
     def __getitem__(self, index):
         return self.blocks[index]

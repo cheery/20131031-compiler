@@ -5,7 +5,7 @@ lib = cffi.library 'libSDL.so' 'SDL/SDL.h'
 res = lib.SDL_Init lib.SDL_INIT_VIDEO
 if res != 0
     println "sdl video initialization failed, res=" res
-    #return implement it.
+    return
 event = lib.SDL_Event.
 surface = lib.SDL_SetVideoMode 640 480 0 0
 

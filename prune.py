@@ -13,6 +13,8 @@ def prune_argument(arg, env, mapping):
             analysis.dominance_frontiers(arg)
             sub_mapping = mapping.copy()
             sub_mapping['cont'] = []
+            for src, dst in zip(arg.argvars, res.argvars):
+                sub_mapping[src] = dst
             prune_block(arg[0], sub_mapping)
             for fn in sub_mapping['cont']:
                 fn()
@@ -96,6 +98,8 @@ def prune(function):
     out = Function(function.argv)
     mapping = {function: out}
     mapping['cont'] = []
+    for src, dst in zip(function.argvars, out.argvars):
+        mapping[src] = dst
     prune_block(function[0], mapping)
     for fn in mapping['cont']:
         fn()
