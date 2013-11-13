@@ -2,6 +2,7 @@ import objects
 from cdll import CDLL
 import os
 import ctypes
+from my_ctypes import *
 
 header_prefixes = [
     "/usr/include",

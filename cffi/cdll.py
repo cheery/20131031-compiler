@@ -105,7 +105,7 @@ class Header(object):
                 cfunc = getattr(lib, name)
                 cfunc.restype = proto.restype.ctype
                 cfunc.argtypes = [arg.ctype for arg in proto.argtypes]
-                return my_ctypes.CFunc(cfunc, proto)
+                return my_ctypes.CFunc(cfunc, proto, name)
             elif node.kind == CursorKind.UNION_DECL:
                 return self.convert_type(node.type.get_canonical())
             else:
@@ -131,3 +131,6 @@ class CDLL(object):
         else:
             res = self.cache[name] = self.search(name)
         return res
+
+    def pre_getattr(self, builder, env, name):
+        return self.getattr(name)

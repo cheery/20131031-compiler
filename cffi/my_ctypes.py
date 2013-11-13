@@ -13,6 +13,9 @@ class CellType(object):
         if value is None:
             return objects.null
         raise Exception("Unknown cell value: %r" % value)
+
+    def __repr__(self):
+        return "<CellType %r>" % self.ctype
     
 class VoidType(CellType):
     def from_ctypes(self, value):
@@ -48,6 +51,9 @@ class PointerType(object):
             return objects.null
         return Pointer(self, value)
 
+    def __repr__(self):
+        return "<PointerType %r>" % self.pointee
+
 class Pointer(object):
     def __init__(self, type, value):
         self.type = type
@@ -70,11 +76,14 @@ class CFunc(object):
     def to_string(self):
         if self.name is None:
             return "<CFunc %x>" % id(self)
-        return self.name
+        return "<CFunc %s>" % self.name
 
     def call(self, args):
         res = self.cfunc(*[arg.as_ctypes_argument() for arg in args])
         return self.proto.restype.from_ctypes(res)
+
+    def __repr__(self):
+        return self.to_string()
 
 class Instance(object):
     def __init__(self, type, c_obj):

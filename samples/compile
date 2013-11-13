@@ -1,8 +1,12 @@
 compile = require 'compile'
+cffi = require 'cffi'
+
+lib = cffi.library 'libc.so.6' 'unistd.h'
 
 println "compiling test"
 
 main = def
-    return 2
+    lib.write lib.STDOUT_FILENO "hello\n" 6
+    return 0
 
 compile.native main
